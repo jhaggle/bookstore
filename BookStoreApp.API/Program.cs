@@ -1,6 +1,8 @@
-using System.ComponentModel;
+Ôªøusing System.ComponentModel;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
+using BookStoreApp.API.Data;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace BookStoreApp.API
@@ -13,6 +15,14 @@ namespace BookStoreApp.API
 
             // Add services to the container.
 
+            // My app needs to "know" about the database. Det f√•r den veta genom att registrera DbContext i Program.cs:
+            // "builder.Services" √§r d√§r man registrerar services som appen beh√∂ver.
+            // .AddDbContext<BookStoreDbContext>(...) l√§gger till a database connection service to the app.
+            var connString = builder.Configuration.GetConnectionString("BookStoreAppDbConnection");
+            builder.Services.AddDbContext<BookStoreDbContext>(options  => options.UseSqlServer(connString)); 
+
+
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -20,15 +30,15 @@ namespace BookStoreApp.API
 
             // context is basically a wrapper around all the config info (like appsettings.json, environment variables, etc.)
             // context is a HostBuilderContext (contains app configuration, environment, etc.)
-            //loggingConfiguration is a LoggerConfiguration (Serilogís configuration object)
+            //loggingConfiguration is a LoggerConfiguration (Serilog‚Äôs configuration object)
             // Below we are passing an inline function as a parameter to UseSerilog(...)
-            // Aha, detta gˆr att 
-            // 1) Fˆrsta s‰ttet
+            // Aha, detta g√∂r att 
+            // 1) F√∂rsta s√§ttet
             builder.Host.UseSerilog((context, loggingConfiguration) => 
             loggingConfiguration.WriteTo.Console().ReadFrom.Configuration(context.Configuration));
 
 
-            // 2) Andra s‰ttet
+            // 2) Andra s√§ttet
             builder.Host.UseSerilog((context, loggingConfiguration) =>
             {
                 // directly instructs Serilog to send logs to the Console.
@@ -38,14 +48,14 @@ namespace BookStoreApp.API
             });
 
 
-            // 3) Tredje s‰ttet
+            // 3) Tredje s√§ttet
             static void ConfigureSerilog(HostBuilderContext context, LoggerConfiguration loggingConfiguration)
             {
                 loggingConfiguration.WriteTo.Console();
                 loggingConfiguration.ReadFrom.Configuration(context.Configuration);
             }
             // Host is a property. Properties in C# can return objects, and we can call methods on those objects
-            //A ìpropertyî is simply a named member of a class that can get(and sometimes set) a valueóand that value can be anything, including a complex object like an IHostBuilder.
+            //A ‚Äúproperty‚Äù is simply a named member of a class that can get(and sometimes set) a value‚Äîand that value can be anything, including a complex object like an IHostBuilder.
             builder.Host.UseSerilog(ConfigureSerilog);
 
             builder.Services.AddCors(options =>
