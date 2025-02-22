@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
+using BookStoreApp.API.Configurations;
 using BookStoreApp.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -19,9 +20,10 @@ namespace BookStoreApp.API
             // "builder.Services" är där man registrerar services som appen behöver.
             // .AddDbContext<BookStoreDbContext>(...) lägger till a database connection service to the app.
             var connString = builder.Configuration.GetConnectionString("BookStoreAppDbConnection");
-            builder.Services.AddDbContext<BookStoreDbContext>(options  => options.UseSqlServer(connString)); 
+            builder.Services.AddDbContext<BookStoreDbContext>(options  => options.UseSqlServer(connString));
 
-
+            // Need to let our program know about automapper 
+            builder.Services.AddAutoMapper(typeof(MapperConfig));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
