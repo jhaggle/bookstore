@@ -11,11 +11,14 @@ using BookStoreApp.API.Models.Author;
 using BookStoreApp.API.Models.Book;
 using BookStoreApp.API.Static;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookStoreApp.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] //[controller] is a placeholder that will be replaced by the controller name (e.g., if the class is BooksController, the route will be api/books)
     [ApiController]
+    [Authorize] //Every single action, every single behavior inside of this controller is now subject to authorization. Locking down the entire suite of operations.
+    
     public class BooksController : ControllerBase
     {
         private readonly BookStoreDbContext _context;
@@ -70,6 +73,7 @@ namespace BookStoreApp.API.Controllers
         // PUT: api/Books/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> PutBook(int id, BookUpdateDto bookDto)
         {
             
@@ -113,6 +117,7 @@ namespace BookStoreApp.API.Controllers
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<BookCreateDto>> PostBook(BookCreateDto bookDto)
         {
 
@@ -141,6 +146,7 @@ namespace BookStoreApp.API.Controllers
 
         // DELETE: api/Books/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             var book = await _context.Books.FindAsync(id);

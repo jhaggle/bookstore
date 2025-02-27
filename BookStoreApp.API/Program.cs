@@ -1,9 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Reflection.Metadata;
+using System.Text;
 using System.Xml.Linq;
 using BookStoreApp.API.Configurations;
 using BookStoreApp.API.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 namespace BookStoreApp.API
@@ -21,6 +25,8 @@ namespace BookStoreApp.API
             // .AddDbContext<BookStoreDbContext>(...) lägger till a database connection service to the app.
             var connString = builder.Configuration.GetConnectionString("BookStoreAppDbConnection");
             builder.Services.AddDbContext<BookStoreDbContext>(options  => options.UseSqlServer(connString));
+
+            builder.Services.AddIdentityCore<ApiUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<BookStoreDbContext>();
 
             // Need to let our program know about automapper 
             builder.Services.AddAutoMapper(typeof(MapperConfig));
@@ -69,6 +75,20 @@ namespace BookStoreApp.API
                     );
             });
 
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //Ser annorlunda ut i .NET 6
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+                        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                    };
+                });
 
             var app = builder.Build();
 
@@ -82,6 +102,8 @@ namespace BookStoreApp.API
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAllStuff"); // We have now created a nice policy that will allow any client from anywhere to access. 
+            
+            app.UseAuthentication(); // För att nu ska vi använda jwt tokens... // Detta är tydligen middleware
             app.UseAuthorization();
 
 

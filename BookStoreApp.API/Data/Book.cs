@@ -22,11 +22,11 @@ public partial class Book
 
     public decimal? Price { get; set; }
 
-    public int? AuthorId { get; set; }
+    public int? AuthorId { get; set; }  // 👈 This is the FOREIGN KEY
 
     //Author is a navigation property. It represents a relationship to another table(Authors).
     //By default, EF Core does NOT automatically load navigation properties unless you explicitly tell it to do so.
     // Because this just defines the relationship in C#, but EF Core decides when to actually load the data.
     // Use .Include(q => q.Author) to tell EF Core to fetch the related data.
-    public virtual Author? Author { get; set; }
+    public virtual Author? Author { get; set; } // 👈 Navigation Property
 }

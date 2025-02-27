@@ -13,7 +13,7 @@ public partial class Author
     //    Books = new HashSet<Book>();
     //}
 
-    public int Id { get; set; }
+    public int Id { get; set; } // primary key
 
     public string? FirstName { get; set; }
 
