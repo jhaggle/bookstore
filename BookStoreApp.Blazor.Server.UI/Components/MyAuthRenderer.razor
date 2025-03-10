@@ -1,0 +1,40 @@
+﻿<!-- /Components/MyAuthRenderer.razor -->
+@using BookStoreApp.Blazor.Server.UI.Providers
+@using BookStoreApp.Blazor.Server.UI.Services.Authentication
+@namespace BookStoreApp.Blazor.Server.UI.Components
+
+@inject ApiAuthenticationStateProvider AuthProvider
+@inject AuthenticationService AuthService
+
+@* @inject ApiAuthenticationStateProvider AuthProvider
+@inject IAuthenticationService AuthService *@
+
+<h1>Testing testing</h1>
+<h3>@DateTime.Now</h3>
+
+<!-- Show whether second pass has occurred -->
+<div style="color: red">Second pass? @isSecondPass</div>
+
+@code {
+    private bool isSecondPass = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("=== OnAfterRender: MyAuthRenderer firstRender ===");
+
+        // Mark the second pass in our provider so that localStorage calls become enabled
+        AuthProvider.MarkSecondPass();
+
+        // If we had a “pending token” from a 202 login attempt, commit it to localStorage now
+        if (AuthService.HasPendingToken)
+        {
+            Console.WriteLine("=== MyAuthRenderer sees a pending token, calling CommitPendingTokenAsync ===");
+            await AuthService.CommitPendingTokenAsync();
+        }
+
+        // We set our local field isSecondPass => True, so we can see it on the screen
+        isSecondPass = true;
+
+    }
+}
+

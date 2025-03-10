@@ -1,0 +1,112 @@
+﻿@page "/users/register"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IClient httpClient
+@inject NavigationManager navManager
+
+<h3>Register New Account</h3>
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-danger">
+        <p>@Message</p>
+    </div>
+}
+
+<!--
+     We use a dummy EditContext to satisfy EditForm’s requirement.
+     In SSR mode the posted form values will be bound to the component’s properties
+     (via [SupplyParameterFromForm]) even though we don’t use the EditContext for interactive binding.
+-->
+<EditForm EditContext="_dummyEditContext"
+          method="post"
+          FormName="registerFormJohan"
+          OnSubmit="HandleRegistration">
+    @* <AntiforgeryToken /> *@
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="email">Email Address</label>
+        <!-- The name attribute must exactly match the bound property name -->
+        <input type="text" class="form-control" name="Email" id="email" />
+    </div>
+    <br />
+
+    <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" class="form-control" name="FirstName" id="firstName" />
+    </div>
+    <br />
+
+    <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" class="form-control" name="LastName" id="lastName" />
+    </div>
+    <br />
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" name="Password" id="password" />
+    </div>
+    <br />
+
+    <button type="submit" class="btn btn-primary btn-block">Register</button>
+</EditForm>
+
+@code {
+    // Provide a dummy EditContext to satisfy EditForm's requirement.
+    // Its model is not used for binding; SSR will map POSTed data to the properties below.
+    private EditContext _dummyEditContext = new EditContext(new object());
+
+    // These properties will be automatically populated from the posted form data.
+    [SupplyParameterFromForm]
+    public string Email { get; set; } = string.Empty;
+
+    [SupplyParameterFromForm]
+    public string FirstName { get; set; } = string.Empty;
+
+    [SupplyParameterFromForm]
+    public string LastName { get; set; } = string.Empty;
+
+    [SupplyParameterFromForm]
+    public string Password { get; set; } = string.Empty;
+
+    // Role is set to a default value (not provided by the form).
+    public string Role { get; set; } = "User";
+
+    public string Message { get; set; } = string.Empty;
+
+    private async Task HandleRegistration()
+    {
+        try
+        {
+            // Build the DTO from SSR-bound properties.
+            var user = new UserDto
+                {
+                    Email = Email,
+                    FirstName = FirstName,
+                    LastName = LastName,
+                    Password = Password,
+                    Role = Role
+                };
+
+            await httpClient.RegisterAsync(user);
+            navManager.NavigateTo("/users/login");
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode >= 200 && ex.StatusCode <= 299)
+            {
+                NavigateToLogin();
+            }
+
+            Message = ex.Response;
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        navManager.NavigateTo("/users/login");
+    }
+
+}

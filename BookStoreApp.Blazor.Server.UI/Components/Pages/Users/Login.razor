@@ -1,0 +1,106 @@
+﻿@page "/users/login"
+@using Microsoft.AspNetCore.Components.Forms
+@* @inject IClient httpClient *@
+@inject IAuthenticationService authService
+@inject NavigationManager navManager
+
+
+<h3>Login</h3>
+
+<div>
+
+    <EditForm EditContext="_dummyEditContext"
+    method="post"
+    FormName="loginFormJohan"
+    OnSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <!-- The name attribute must exactly match the bound property name -->
+            <input type="text" class="form-control" name="Email" id="email" />
+        </div>
+        <br />
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" name="Password" id="password" />
+        </div>
+        <br />
+
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </EditForm>
+
+
+</div>
+
+
+@code {
+
+    // Provide a dummy EditContext to satisfy EditForm's requirement.
+    // Its model is not used for binding; SSR will map POSTed data to the properties below.
+    private EditContext _dummyEditContext = new EditContext(new object());
+
+    [SupplyParameterFromForm]
+    public string Email { get; set; } = string.Empty;
+
+    [SupplyParameterFromForm]
+    public string Password { get; set; } = string.Empty;
+
+    //We need a login DTO, can check ServiceClient.cs what it was....
+    private LoginUserDto loginModel = new LoginUserDto();
+
+    // Role is set to a default value (not provided by the form).
+    public string Role { get; set; } = "User";
+
+    public string Message { get; set; } = string.Empty;
+
+    private async Task HandleLogin()
+    {
+
+        try
+        {
+            loginModel.Email = Email;
+            loginModel.Password = Password;
+
+            // 2.Why a Custom AuthenticationService instead of httpClient?
+            // A.Extra Logic(Storing Token, Updating Auth State)
+            // If you just do:
+            // var response = await httpClient.LoginAsync(loginModel);
+            // …you get the raw response from the API(e.g., a JWT token). That’s not the end of the story.Typically, you also need to:
+            // Store the JWT in local storage so future requests have it.
+            // Update the AuthenticationStateProvider so Blazor components know the user is logged in.
+            // Possibly handle errors, expiration checks, or refresh tokens.
+
+            //Now we have a access to httpClient inside AuthenticationService, which means that instead of calling
+            //the login method in this Login component, I'm just going to call my authentication service, which
+            //will do the login and do other stuff and just have a clean code call right here inside of the component.
+
+
+            // var response = await httpClient.LoginAsync(loginModel); - Så detta tar vi bort.
+            var response = await authService.AuthenticateAsync(loginModel);
+
+            //need to set up token and authorization state 
+            // will set up a custom service that will handle the authentication
+
+			if (response)
+			{
+				navManager.NavigateTo("/");
+			}
+
+			Message = "Invalid login attempt, synd för dig"; 
+
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode >= 200 && ex.StatusCode <= 299)
+            {
+            }
+
+            Message = ex.Response;
+
+            throw;
+        }
+    }
+}

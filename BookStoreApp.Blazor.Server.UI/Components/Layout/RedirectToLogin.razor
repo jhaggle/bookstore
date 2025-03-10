@@ -1,0 +1,19 @@
+﻿@inject NavigationManager Navigation	
+
+<h3>RedirectToLogin</h3>
+
+@code {
+
+
+	// So every component has a few built in methods.
+	// If you just write override, you'll see them listed there on initialized gets 
+	// run once that component loads.
+	// So if you want to do something as soon as the component loads, you just do it 
+	// inside of the uninitialized.
+
+	protected override void OnInitialized()
+	{
+		Navigation.NavigateTo($"users/Login", true);
+	}
+
+}

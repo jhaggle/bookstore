@@ -46,34 +46,34 @@ namespace BookStoreApp.API
             loggingConfiguration.WriteTo.Console().ReadFrom.Configuration(context.Configuration));
 
 
-            // 2) Andra sättet
-            builder.Host.UseSerilog((context, loggingConfiguration) =>
-            {
-                // directly instructs Serilog to send logs to the Console.
-                loggingConfiguration.WriteTo.Console();
-                // Also, look in appsettings.json (or other config sources) for any Serilog section, and apply those instructions too
-                loggingConfiguration.ReadFrom.Configuration(context.Configuration);
-            });
+            //// 2) Andra sättet
+            //builder.Host.UseSerilog((context, loggingConfiguration) =>
+            //{
+            //    // directly instructs Serilog to send logs to the Console.
+            //    loggingConfiguration.WriteTo.Console();
+            //    // Also, look in appsettings.json (or other config sources) for any Serilog section, and apply those instructions too
+            //    loggingConfiguration.ReadFrom.Configuration(context.Configuration);
+            //});
 
 
-            // 3) Tredje sättet
-            static void ConfigureSerilog(HostBuilderContext context, LoggerConfiguration loggingConfiguration)
-            {
-                loggingConfiguration.WriteTo.Console();
-                loggingConfiguration.ReadFrom.Configuration(context.Configuration);
-            }
-            // Host is a property. Properties in C# can return objects, and we can call methods on those objects
-            //A “property” is simply a named member of a class that can get(and sometimes set) a value—and that value can be anything, including a complex object like an IHostBuilder.
-            builder.Host.UseSerilog(ConfigureSerilog);
+            //// 3) Tredje sättet
+            //static void ConfigureSerilog(HostBuilderContext context, LoggerConfiguration loggingConfiguration)
+            //{
+            //    loggingConfiguration.WriteTo.Console();
+            //    loggingConfiguration.ReadFrom.Configuration(context.Configuration);
+            //}
+            //// Host is a property. Properties in C# can return objects, and we can call methods on those objects
+            ////A “property” is simply a named member of a class that can get(and sometimes set) a value—and that value can be anything, including a complex object like an IHostBuilder.
+            //builder.Host.UseSerilog(ConfigureSerilog);
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAllStuff", 
-                    b => b.AllowAnyMethod().
-                            AllowAnyHeader().
-                            AllowAnyOrigin()
-                    );
-            });
+            //builder.Services.AddCors(options =>
+            //{
+            //    options.AddPolicy("AllowAllStuff", 
+            //        b => b.AllowAnyMethod().
+            //                AllowAnyHeader().
+            //                AllowAnyOrigin()
+            //        );
+            //});
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) //Ser annorlunda ut i .NET 6
                 .AddJwtBearer(options => {

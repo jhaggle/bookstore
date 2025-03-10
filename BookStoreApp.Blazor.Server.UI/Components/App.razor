@@ -1,0 +1,69 @@
+﻿
+@using Microsoft.AspNetCore.Components.Authorization
+@using BookStoreApp.Blazor.Server.UI.Components  @* <-- ADDED this so we can use <MyAuthRenderer> *@
+@using BookStoreApp.Blazor.Server.UI.Components.Layout @* ADDED to see MainLayout *@
+@* @rendermode Server
+ *@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["BookStoreApp.Blazor.Server.UI.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    @* <Routes /> *@
+
+    <!-- Insert the same approach as .NET 6 here: -->
+    <CascadingAuthenticationState>
+        <MyAuthRenderer />
+        <Router AppAssembly="@typeof(Program).Assembly">
+            
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+
+                    <NotAuthorized>
+                        <!-- Some logic: redirect or show message -->
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound> 
+                <p>Page not found</p> @* minimal text instead of triple dots *@
+            </NotFound>
+        </Router>
+
+        <!-- ADDED: MyAuthRenderer at the end of CascadingAuthenticationState, minimal change -->
+        <MyAuthRenderer />
+    </CascadingAuthenticationState>
+
+    <script src="_framework/blazor.web.js"></script>
+    @* <script src="_framework/blazor.server.js"></script> *@
+
+</body>
+</html>
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("=== App.razor OnAfterRender (client) ===");
+        }
+    }
+}
+
+ @* In .NET 9, _Host.cshtml is gone because Blazor now uses App.razor to handle everything.
+ The bootstrapping is done inside App.razor, making Blazor work more like a standard frontend framework.
+
+ In .NET 6, Blazor needed _Host.cshtml to start running.
+In .NET 9, _Host.cshtml is gone, and App.razor now does the same job in a better way.
+ *@
+
